@@ -5,6 +5,10 @@
  */
 package com.example.project.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import java.time.LocalDate;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -26,7 +30,9 @@ public class Complaint {
     private Long id;
     @NotEmpty
     private String complain;
-    @NotEmpty
+    
+    @JsonDeserialize(using = LocalDateDeserializer.class)
+    @JsonSerialize(using=LocalDateSerializer.class)
     private LocalDate date;
 
     public Complaint() {

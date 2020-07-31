@@ -15,13 +15,13 @@ public class JwtResponse {
     
     private String accessToken;
     private String tokenType = "Bearer ";
-    private int id;
+    private Long id;
     private String email;
     private String firstName;
     private String lastName;
     private List<String> roles;
 
-    public JwtResponse(String accessToken, int id, String email, String firstName, String lastName, List<String> roles) {
+    public JwtResponse(String accessToken, Long id, String email, String firstName, String lastName, List<String> roles) {
         this.accessToken = accessToken;
         this.id = id;
         this.email = email;
@@ -46,11 +46,11 @@ public class JwtResponse {
         this.tokenType = tokenType;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
