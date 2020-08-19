@@ -1,11 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.example.project.controller;
 
 import com.example.project.email.EmailService;
+import com.example.project.fileservice.CloudinaryService;
 import com.example.project.jwt.Jwt;
 import com.example.project.jwt.payload.request.LoginRequest;
 import com.example.project.jwt.payload.request.SignupRequest;
@@ -13,26 +9,31 @@ import com.example.project.jwt.payload.response.JwtResponse;
 import com.example.project.jwt.payload.response.MessageResponse;
 import com.example.project.model.Complaint;
 import com.example.project.model.ERole;
+import com.example.project.model.MyFile;
 import com.example.project.model.Role;
 import com.example.project.model.User;
-import com.example.project.passwordreset.CheckPin;
-import com.example.project.passwordreset.PasswordMail;
+import com.example.project.password.ResetPassword;
 import com.example.project.repository.ComplaintRepository;
+import com.example.project.repository.MyFileRepository;
 import com.example.project.repository.RoleRepository;
 import com.example.project.repository.UserRepository;
 import com.example.project.service.UserDetailsImpl;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+
 import java.util.Map;
+import java.util.Optional;
+
 import java.util.Set;
+
 import java.util.stream.Collectors;
+
 import javax.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.MailException;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -41,23 +42,21 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
-/**
- *
- * @author Adewole
- */
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/authe")
 public class FirstController {
 
-    private Logger logger = LoggerFactory.getLogger(FirstController.class);
     
     @Autowired
     AuthenticationManager authe;
@@ -70,6 +69,9 @@ public class FirstController {
     
     @Autowired
     ComplaintRepository complaintRepository;
+    
+    @Autowired
+    MyFileRepository myFileRepository;
 
     @Autowired
     Jwt jwtUtil;
@@ -80,8 +82,8 @@ public class FirstController {
     @Autowired
     private EmailService emailService;
     
-//    @Autowired
-//    private PasswordMail passwordMail;
+    @Autowired
+    private CloudinaryService cloudinaryService;  
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
@@ -96,9 +98,7 @@ public class FirstController {
                 signupRequest.getEmail(),
                 encoder.encode(signupRequest.getPassword()),
                 signupRequest.getAddress());
-                
-              
-
+                     
         Set<String> strRoles = signupRequest.getRole();
         Set<Role> roles = new HashSet<>();
 
@@ -123,14 +123,12 @@ public class FirstController {
             });
         }
         
-        
         Map<String,Object> model = new HashMap<>();
-        model.put("Name", signupRequest.getFirstName() +" " + signupRequest.getLastName());
+        model.put("Name", "David" +" " + "Adewole");
         model.put("Location","Ibadan, Nigeria");
         emailService.sendEmail(signupRequest, model);
         System.out.println("Email Sent Successfully");
-        
-        
+    
         user.setRoles(roles);
         userRepository.save(user);
         return ResponseEntity.ok(new MessageResponse("User registered successfully and Mail Sent Successfully"));
@@ -155,26 +153,44 @@ public class FirstController {
                 userDetails.getLastName(),
                 roles));       
     }
-//    @PostMapping("/checkpin")
-//    public void checkpin(@Valid @RequestBody CheckPin checkPin) {
-//        if (userRepository.existsByEmail(checkPin.getEmail())) {
-//            try {
-//                passwordMail.sendMail(checkPin);
-//            } catch (MailException e) {
-//                logger.info("Error sending mail: " + e.getMessage());
-//            }
-//
-//        }else{
-//            System.out.println("Enter a valid email");
-//        }
-//    }
-//   @PutMapping("/reset")
-//   public String reset(@RequestParam Long user.getId(), @Valid @RequestBody User user){
-//       userRepository.findById(user.getId()).
-//   }
+
+     @PutMapping("/upload/{id}")
+    public String myFile(@PathVariable(value="id") Long id, @RequestParam("file") MultipartFile file) {
+        String url = cloudinaryService.uploadFile(file);
+      
+        MyFile ft = new MyFile();
+        ft.setImageUrl(url);
+        ft.setId(id);
+        cloudinaryService.saveResponse(ft); 
+        
+        return "File uploaded successfully: File path :  " + url;
+    }
+    
+    @GetMapping("/download/{id}")
+    public Optional<MyFile> downloadFile(@PathVariable(value="id")Long id){
+      //  MyFile ft = new MyFile();
+        Boolean imageId = myFileRepository.existsById(id);
+        if(imageId == true){
+            return myFileRepository.findById(id);
+        }
+        return myFileRepository.findById(id);
+    }
+    
     @PostMapping("/complain")
     public String complain(@Valid @RequestBody Complaint complaint){
         complaintRepository.save(complaint);
         return "User complain saved successfully";
     }
-}
+    //Reset Password
+    @PostMapping("/resetPassword")
+    public String changePassword(@Valid @RequestBody ResetPassword resetPassword ){
+        if(userRepository.existsByEmail(resetPassword.getEmail())){
+      
+         User u = new User();
+        u.setPassword("666777");
+            return "Password has been set";
+        }else{
+            return "Email not Found";
+        }
+    }
+}   

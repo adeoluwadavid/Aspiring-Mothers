@@ -15,19 +15,17 @@ import javax.validation.constraints.Size;
  * @author Adewole
  */
 public class SignupRequest {
-    @NotEmpty
+    
     private String firstName;
-    @NotEmpty
+   
     private String lastName;
-    @Email
+   
     private String email;
     
-   @NotEmpty
-   @Size(min = 5)
+   
     private String password;
     
-   @NotEmpty
-   @Size(max = 250)
+   
     private String address;
     
     private Set<String> role;

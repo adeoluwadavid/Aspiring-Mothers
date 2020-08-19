@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.example.project.file;
+package com.example.project.fileservice;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import com.example.project.model.User;
-import com.example.project.repository.UserRepository;
+import com.example.project.model.MyFile;
+import com.example.project.repository.MyFileRepository;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,12 +22,14 @@ import org.springframework.web.multipart.MultipartFile;
  * @author Adewole
  */
 @Service
-public class FileService {
-     @Autowired
+public class CloudinaryService {
+     
+    @Autowired
     private Cloudinary cloudinaryConfig;
     
     @Autowired
-    private UserRepository userRepository;
+    private MyFileRepository myFileRepository;
+    
     public String uploadFile(MultipartFile file) {
         try {
             File uploadedFile = convertMultiPartToFile(file);
@@ -46,8 +48,7 @@ public class FileService {
         return convFile;
     }
     
-    
-    public void saveResponse(User user){
-        userRepository.save(user);
+    public void saveResponse(MyFile myFile){
+        myFileRepository.save(myFile);
     }
 }

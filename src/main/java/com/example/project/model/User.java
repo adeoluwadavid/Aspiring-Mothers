@@ -7,9 +7,7 @@ package com.example.project.model;
 
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -18,15 +16,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 
-/**
- *
- * @author Adewole
- */
 @Entity
 @Table(name="user")
 public class User {
@@ -35,24 +28,15 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @NotEmpty
     private String firstName;
-   @NotEmpty
-    private String lastName;
     
-    @Email
+    private String lastName;
+   
     private String email;
     
-   @NotEmpty
     private String password;
-    
-   @NotEmpty
-    private String address;
-    
-    @OneToMany(targetEntity=Complaint.class)
-    @JoinColumn(name="user_id")
-    private List complain;
-    
+   
+    private String address;  
     
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles",
@@ -71,6 +55,10 @@ public class User {
         this.address = address;
     }
 
+    public User(String email) {
+        this.email = email;
+    }
+    
     public Long getId() {
         return id;
     }
@@ -118,17 +106,6 @@ public class User {
     public void setAddress(String address) {
         this.address = address;
     }
-
-    public List getComplain() {
-        return complain;
-    }
-
-    public void setComplain(List complain) {
-        this.complain = complain;
-    }
-
-   
-   
 
     public Set<Role> getRoles() {
         return roles;

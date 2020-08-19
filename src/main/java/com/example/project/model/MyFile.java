@@ -21,14 +21,10 @@ import javax.persistence.Table;
 @Table(name="user_image")
 public class MyFile {
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
     
     private String imageUrl;
 
-   @OneToOne()
-    @JoinColumn(name="user_id")
-    private User user;
 
     public MyFile() {
     }
@@ -52,13 +48,4 @@ public class MyFile {
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-    
 }

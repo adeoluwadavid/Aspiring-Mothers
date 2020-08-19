@@ -12,7 +12,7 @@ public class ProjectApplication {
 
     @Autowired
     private ObjectMapper objectMapper;
-
+    
     public static void main(String[] args) {
         SpringApplication.run(ProjectApplication.class, args);
     }

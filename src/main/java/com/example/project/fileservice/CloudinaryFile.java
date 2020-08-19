@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.example.project.file;
+package com.example.project.fileservice;
 
 import com.cloudinary.Cloudinary;
 import java.util.HashMap;
@@ -17,8 +17,7 @@ import org.springframework.stereotype.Component;
  * @author Adewole
  */
 @Component
-public class FileConfig {
-     
+public class CloudinaryFile {
     @Value("${cloudinary.cloud_name}")
     private String cloudName;
     

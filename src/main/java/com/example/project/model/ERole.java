@@ -5,10 +5,7 @@
  */
 package com.example.project.model;
 
-/**
- *
- * @author Adewole
- */
+
 public enum ERole {
     ROLE_ADMIN,
     ROLE_USER

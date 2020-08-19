@@ -13,10 +13,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-/**
- *
- * @author Adewole
- */
+
 @Entity
 @Table(name="roles")
 public class Role {

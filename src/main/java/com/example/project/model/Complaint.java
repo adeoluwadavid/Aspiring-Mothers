@@ -15,7 +15,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
 import javax.validation.constraints.NotEmpty;
 
 /**
@@ -34,13 +33,16 @@ public class Complaint {
     @JsonDeserialize(using = LocalDateDeserializer.class)
     @JsonSerialize(using=LocalDateSerializer.class)
     private LocalDate date;
+    
+    private Long user_id;
 
     public Complaint() {
     }
 
-    public Complaint(String complain, LocalDate date) {
+    public Complaint(String complain, LocalDate date, Long user_id) {
         this.complain = complain;
         this.date = date;
+        this.user_id = user_id;
     }
 
     public Long getId() {
@@ -67,6 +69,12 @@ public class Complaint {
         this.date = date;
     }
 
-    
+    public Long getUser_id() {
+        return user_id;
+    }
+
+    public void setUser_id(Long user_id) {
+        this.user_id = user_id;
+    }
     
 }
