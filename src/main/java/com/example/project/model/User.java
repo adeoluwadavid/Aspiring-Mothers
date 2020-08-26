@@ -20,7 +20,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 
-@Entity
+@Entity(name="User")
 @Table(name="user")
 public class User {
     

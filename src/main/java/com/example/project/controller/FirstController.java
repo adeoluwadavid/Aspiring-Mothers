@@ -12,12 +12,16 @@ import com.example.project.model.ERole;
 import com.example.project.model.MyFile;
 import com.example.project.model.Role;
 import com.example.project.model.User;
+
 import com.example.project.password.ResetPassword;
+import com.example.project.password.ResourceNotFoundException;
+import com.example.project.password.UpdatePassword;
 import com.example.project.repository.ComplaintRepository;
 import com.example.project.repository.MyFileRepository;
 import com.example.project.repository.RoleRepository;
 import com.example.project.repository.UserRepository;
 import com.example.project.service.UserDetailsImpl;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,9 +34,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -57,7 +65,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/authe")
 public class FirstController {
 
-    
     @Autowired
     AuthenticationManager authe;
 
@@ -66,10 +73,10 @@ public class FirstController {
 
     @Autowired
     RoleRepository roleRepository;
-    
+
     @Autowired
     ComplaintRepository complaintRepository;
-    
+
     @Autowired
     MyFileRepository myFileRepository;
 
@@ -78,12 +85,17 @@ public class FirstController {
 
     @Autowired
     PasswordEncoder encoder;
-    
+
     @Autowired
     private EmailService emailService;
-    
+
     @Autowired
-    private CloudinaryService cloudinaryService;  
+    private CloudinaryService cloudinaryService;
+
+    @Autowired
+    private JavaMailSender javaMailSender;
+
+    private static final Logger log = LoggerFactory.getLogger(FirstController.class);
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
@@ -98,7 +110,7 @@ public class FirstController {
                 signupRequest.getEmail(),
                 encoder.encode(signupRequest.getPassword()),
                 signupRequest.getAddress());
-                     
+
         Set<String> strRoles = signupRequest.getRole();
         Set<Role> roles = new HashSet<>();
 
@@ -122,17 +134,18 @@ public class FirstController {
                 }
             });
         }
-        
-        Map<String,Object> model = new HashMap<>();
-        model.put("Name", "David" +" " + "Adewole");
-        model.put("Location","Ibadan, Nigeria");
+
+        Map<String, Object> model = new HashMap<>();
+        model.put("Name", "David" + " " + "Adewole");
+        model.put("Location", "Ibadan, Nigeria");
         emailService.sendEmail(signupRequest, model);
         System.out.println("Email Sent Successfully");
-    
+
         user.setRoles(roles);
         userRepository.save(user);
         return ResponseEntity.ok(new MessageResponse("User registered successfully and Mail Sent Successfully"));
     }
+
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authen = authe.authenticate(
@@ -151,46 +164,104 @@ public class FirstController {
                 userDetails.getEmail(),
                 userDetails.getFirstName(),
                 userDetails.getLastName(),
-                roles));       
+                roles));
     }
 
-     @PutMapping("/upload/{id}")
-    public String myFile(@PathVariable(value="id") Long id, @RequestParam("file") MultipartFile file) {
+    @PutMapping("/upload/{id}")
+    public String myFile(@PathVariable(value = "id") Long id, @RequestParam("file") MultipartFile file) {
         String url = cloudinaryService.uploadFile(file);
-      
+
         MyFile ft = new MyFile();
         ft.setImageUrl(url);
         ft.setId(id);
-        cloudinaryService.saveResponse(ft); 
-        
+        cloudinaryService.saveResponse(ft);
+
         return "File uploaded successfully: File path :  " + url;
     }
-    
+
+    @PutMapping("/updatePassword/{id}")
+    public User updatePassword(@PathVariable(value = "id") Long id, @Valid @RequestBody UpdatePassword updatePassword) {
+        User pword = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+        pword.setPassword(encoder.encode(updatePassword.getNewPassword()));
+
+        User updateP = userRepository.save(pword);
+        return updateP;
+
+    }
+
     @GetMapping("/download/{id}")
-    public Optional<MyFile> downloadFile(@PathVariable(value="id")Long id){
-      //  MyFile ft = new MyFile();
+    public Optional<MyFile> downloadFile(@PathVariable(value = "id") Long id) {
+        //  MyFile ft = new MyFile();
         Boolean imageId = myFileRepository.existsById(id);
-        if(imageId == true){
+        if (imageId == true) {
             return myFileRepository.findById(id);
         }
         return myFileRepository.findById(id);
     }
-    
+
     @PostMapping("/complain")
-    public String complain(@Valid @RequestBody Complaint complaint){
+    public String complain(@Valid @RequestBody Complaint complaint) {
         complaintRepository.save(complaint);
         return "User complain saved successfully";
     }
     //Reset Password
-    @PostMapping("/resetPassword")
-    public String changePassword(@Valid @RequestBody ResetPassword resetPassword ){
-        if(userRepository.existsByEmail(resetPassword.getEmail())){
-      
-         User u = new User();
-        u.setPassword("666777");
-            return "Password has been set";
-        }else{
-            return "Email not Found";
-        }
+
+    @GetMapping("/allPword")
+    public List getPword() {
+        return userRepository.getUserByPassword();
     }
-}   
+
+    @PostMapping("/setPassword")
+    public void setPassword(@Valid @RequestBody ResetPassword resetPassword) {
+
+        String password = FirstController.getAlphaNumericString(10);
+
+        if (userRepository.existsByEmail(resetPassword.getEmail())) {
+
+            userRepository.setPassword(encoder.encode(password), resetPassword.getEmail());
+
+            SimpleMailMessage mail = new SimpleMailMessage();
+            mail.setTo(resetPassword.getEmail());
+            mail.setFrom("adeoluwadavid@gmail.com");
+            mail.setSubject("Password Reset");
+            mail.setText("Hello, Your Password has been reset to: " + password);
+
+            javaMailSender.send(mail);
+            log.info("Password Sent Successfully");
+
+            System.out.println(password);
+
+        } else {
+            log.error("Email is Not Correct");
+
+        }
+
+    }
+
+    // Password Generator
+    static String getAlphaNumericString(int n) {
+
+        // chose a Character random from this String 
+        String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                + "0123456789"
+                + "abcdefghijklmnopqrstuvxyz";
+
+        // create StringBuffer size of AlphaNumericString 
+        StringBuilder sb = new StringBuilder(n);
+
+        for (int i = 0; i < n; i++) {
+
+            // generate a random number between 
+            // 0 to AlphaNumericString variable length 
+            int index
+                    = (int) (AlphaNumericString.length()
+                    * Math.random());
+
+            // add Character one by one in end of sb 
+            sb.append(AlphaNumericString
+                    .charAt(index));
+        }
+
+        return sb.toString();
+    }
+}
