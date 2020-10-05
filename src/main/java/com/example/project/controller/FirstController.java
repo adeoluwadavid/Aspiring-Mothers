@@ -97,6 +97,11 @@ public class FirstController {
 
     private static final Logger log = LoggerFactory.getLogger(FirstController.class);
 
+    
+    @GetMapping("/get")
+    public String get(){
+        return "My Project React-Spring";
+    }
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
         if (userRepository.existsByEmail(signupRequest.getEmail())) {
