@@ -1,1 +1,0 @@
-web: java $JAVA_OPTS -cp target/classes:target/project-0.0.1-SNAPSHOT/* com.example.project;
