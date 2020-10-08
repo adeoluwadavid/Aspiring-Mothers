@@ -103,7 +103,7 @@ public class FirstController {
         return "My Project React-Spring";
     }
     @GetMapping("/getall")
-    public User getAll(){
+    public List<User> getAll(){
         return userRepository.findAll();
     }
     @PostMapping("/signup")
