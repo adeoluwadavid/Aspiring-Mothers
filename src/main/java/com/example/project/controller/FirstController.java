@@ -144,11 +144,11 @@ public class FirstController {
             });
         }
 
-        Map<String, Object> model = new HashMap<>();
-        model.put("Name", "David" + " " + "Adewole");
-        model.put("Location", "Ibadan, Nigeria");
-        emailService.sendEmail(signupRequest, model);
-        System.out.println("Email Sent Successfully");
+//        Map<String, Object> model = new HashMap<>();
+//        model.put("Name", "David" + " " + "Adewole");
+//        model.put("Location", "Ibadan, Nigeria");
+//        emailService.sendEmail(signupRequest, model);
+//        System.out.println("Email Sent Successfully");
 
         user.setRoles(roles);
         userRepository.save(user);
