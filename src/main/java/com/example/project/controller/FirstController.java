@@ -102,6 +102,10 @@ public class FirstController {
     public String get(){
         return "My Project React-Spring";
     }
+    @GetMapping("/getall")
+    public User getAll(){
+        return userRepository.findAll();
+    }
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
         if (userRepository.existsByEmail(signupRequest.getEmail())) {
