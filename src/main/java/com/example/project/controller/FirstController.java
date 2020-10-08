@@ -207,9 +207,10 @@ public class FirstController {
         }
         return myFileRepository.findById(id);
     }
-
-    @PostMapping("/complain")
-    public String complain(@Valid @RequestBody Complaint complaint) {
+    
+//    @CrossOrigin(origins = "https://my-java-backend.herokuapp.com/authe")
+    @PostMapping("/complain/{id}")
+    public String complain(@PathVariable(value="id") Long id, @Valid @RequestBody Complaint complaint) {
         complaintRepository.save(complaint);
         return "User complain saved successfully";
     }
